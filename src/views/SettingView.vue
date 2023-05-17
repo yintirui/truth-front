@@ -104,9 +104,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import router from "@/router";
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { Action } from 'element-plus'
-
+import { ElMessageBox } from 'element-plus'
 
 const diy = ref(true)
 
@@ -132,10 +130,9 @@ const setting = ref<SettingProps>({
 
 const handleChange = (value: number) => {
   console.log(setting.value)
-  console.log(1)
 }
 const save = () => {
-  ElMessageBox.alert('消息已保存', '提示', {
+  ElMessageBox.alert('设置已保存', '提示', {
     confirmButtonText: 'OK',
   })
 }
