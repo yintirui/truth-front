@@ -34,7 +34,8 @@
       </div>
 
       <!--unzip filename list -->
-      <div class="item">
+      <div class="item" >
+<!--           v-if="(tableData.length > 0) || (loading.value === true)">-->
         <el-table v-loading="loading"
                   :data="tableData"
                   element-loading-text="正在解析数据集..."
@@ -44,9 +45,30 @@
       </div>
 
       <!--start task button -->
+<!--      TODO-->
+<!--      <div class="item" v-if="tableData.length > 0">-->
       <div class="item">
         <el-button type="primary" @click="startTask">开始任务</el-button>
       </div>
+
+      <div class="item" v-if="resShow"
+           style="display: flex; flex-direction: column">
+        <el-text class="mx-1" type="info">
+          输出
+        </el-text>
+
+        <el-progress
+            :text-inside="true"
+            :stroke-width="24"
+            :percentage="percentage"
+            status="success"
+        />
+        <div>
+          <div id="terminal"></div>
+        </div>
+
+      </div>
+
       <!--main end-->
     </div>
   </div>
@@ -54,11 +76,16 @@
 
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import axios from 'axios'
+import { Terminal } from 'xterm';
+import 'xterm/css/xterm.css';
 import type { UploadInstance } from 'element-plus'
 
+
 const loading = ref(false)
+const resShow = ref(false)
+const percentage = ref<number>(0)
 
 const tableData = ref<Array<{ name: string }>>([]);
 
@@ -86,28 +113,64 @@ const handleUploadSuccess = (response, file, fileList) => {
     loading.value = true;
     setTimeout(()=>{
       loading.value = false
+      for(const d of data) {
+        tableData.value.push({name: d});
+      }
     }, 1200);
-
-    for(const d of data) {
-      tableData.value.push({name: d});
-    }
   }
 }
 
+function sleep(ms: number) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {}
+}
+const term = new Terminal();
+onMounted(()=>{
+  setTimeout(()=>{
+    document.getElementById('terminal')
+    term.open(document.getElementById('terminal'));
+  }, 1000)
+})
+
 const startTask = () => {
-  // this.$http.get('/start').then((resp)=>{
-  //   console.log(resp)
-  // })
-  // https://blog.csdn.net/qq_43318840/article/details/122247433
-  console.log(task)
-  axios.get(`http://localhost:5000/start?type=${task.value.taskName}`).then(resp => {
-    console.log(resp);
-  })
+  resShow.value = true
+  sleep(1000);
+
+  axios.get(`http://localhost:5000/start?type=${task.value.taskName}`).then(
+    async resp => {
+      console.log(resp.data);
+      while (percentage.value < 90) {
+        await getProgress()
+        sleep(500)
+        console.log(percentage.value)
+      }
+      percentage.value = 100;
+    })
 }
 
-const getProgress = () => {
-  this.$http.get('/getProgress').then(resp => {
-      console.log(resp);
+interface progressProps {
+  currentEpoch: number;
+  totalEpochs: number;
+  logs: Array<string>;
+}
+
+const pgInstance = ref<progressProps>({
+
+});
+
+const getProgress = async () => {
+  await axios.get(`http://localhost:5000/getProgress`).then(resp => {
+    console.log(resp.data);
+    if (resp.data['code'] == 200) {
+      pgInstance.currentEpoch = resp.data['data']['current']
+      pgInstance.totalEpochs = resp.data['data']['epochs']
+      pgInstance.logs = resp.data['data']['logs']
+      percentage.value = Math.ceil(100 * pgInstance.currentEpoch / pgInstance.totalEpochs)
+      for(const log: string of pgInstance.logs) {
+        term.write(log+"\r\n")
+      }
+      // term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ')
+    }
   })
 }
 </script>

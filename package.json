@@ -14,7 +14,8 @@
     "element-plus": "^2.3.4",
     "pinia": "^2.0.36",
     "vue": "^3.3.2",
-    "vue-router": "^4.2.0"
+    "vue-router": "^4.2.0",
+    "xterm": "^5.1.0"
   },
   "devDependencies": {
     "@tsconfig/node18": "^2.0.1",

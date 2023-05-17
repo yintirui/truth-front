@@ -61,7 +61,7 @@
           <el-text class="mx-1" size="large">迭代次数(epochs)</el-text>
         </div>
         <div class="right-box">
-          <el-input-number v-model="setting.epochs" :min="1" :step="128" @change="handleChange" />
+          <el-input-number v-model="setting.epochs" :min="100" :step="20" @change="handleChange" />
         </div>
       </div>
 
@@ -71,7 +71,7 @@
           <el-text class="mx-1" size="large">批量大小(batch size)</el-text>
         </div>
         <div class="right-box">
-          <el-input-number v-model="setting.batch_size" :min="1" :step="128" @change="handleChange" />
+          <el-input-number v-model="setting.batch_size" :min="16" :step="16" @change="handleChange" />
         </div>
       </div>
 
@@ -90,7 +90,7 @@
           <el-text class="mx-1" size="large">辅助网络embedding维度</el-text>
         </div>
         <div class="right-box">
-          <el-input-number v-model="setting.emb_dim" :min="1" :step="128" @change="handleChange" />
+          <el-input-number v-model="setting.emb_dim" :min="5" :step="1" @change="handleChange" />
         </div>
       </div>
 
